@@ -45,3 +45,41 @@ Per fermare i container, esegui il seguente comando dalla directory principale d
 ```bash
 docker-compose down
 ```
+
+## Come vedere i log dell'applicazione
+
+Per visualizzare i log di tutti i servizi in tempo reale, esegui il seguente comando:
+
+```bash
+docker-compose logs -f
+```
+
+Questo comando mostrerà i log del frontend, del backend e del database. Per visualizzare i log di un servizio specifico, aggiungi il nome del servizio al comando (es. `docker-compose logs -f backend`).
+
+## Migrazione dei dati da test a produzione
+
+Per copiare i dati del database da un ambiente di test a uno di produzione, puoi seguire questi passaggi:
+
+### 1. Creare un backup del database di test
+
+Esegui questo comando nel terminale del tuo ambiente di test per creare un file di backup (`backup.sql`) del database:
+
+```bash
+docker-compose exec db sh -c 'exec mysqldump --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} ${MYSQL_DATABASE}' > backup.sql
+```
+
+Questo comando utilizza `mysqldump` all'interno del container `db` per esportare il database.
+
+### 2. Copiare il file di backup nell'ambiente di produzione
+
+Trasferisci il file `backup.sql` dal tuo ambiente di test al tuo ambiente di produzione utilizzando un metodo a tua scelta (es. `scp`, `rsync`, o copia manuale).
+
+### 3. Ripristinare il backup nel database di produzione
+
+Una volta che il file `backup.sql` si trova nel tuo ambiente di produzione, esegui questo comando per importare i dati nel database di produzione:
+
+```bash
+cat backup.sql | docker-compose exec -T db sh -c 'exec mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} ${MYSQL_DATABASE}'
+```
+
+Questo comando importa i dati dal file `backup.sql` nel container `db` dell'ambiente di produzione.
